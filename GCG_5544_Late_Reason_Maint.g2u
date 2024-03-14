@@ -1,0 +1,130 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("Late Reason Maintenance")
+Gui.Form..Size(5880,9105)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form..ContextMenuCreate("ctxLateReason")
+Gui.Form..ContextMenuAddItem("ctxLateReason","Delete",0,"Delete Late Reason")
+Gui.Form..ContextMenuSetItemEventHandler("ctxLateReason","Delete","Addclick")
+Gui.Form.txtReason.Create(TextBox,"",True,2400,300,0,870,615,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtReason.ControlGroup(1)
+Gui.Form.txtReason.MaxLength(30)
+Gui.Form.cmdAdd.Create(Button)
+Gui.Form.cmdAdd.Size(855,375)
+Gui.Form.cmdAdd.Position(4110,570)
+Gui.Form.cmdAdd.Caption("Add")
+Gui.Form.cmdAdd.Event(Click,cmdAdd_Click)
+Gui.Form.GsGCPL.Create(GsGridControl)
+Gui.Form.GsGCPL.Size(5160,7050)
+Gui.Form.GsGCPL.Position(210,1110)
+Gui.Form.lbl2.Create(Label,"Late Reason",True,1935,255,0,870,375,True,0,"Arial",8,-2147483633,0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Created by GB on 5/27/2019 for Fast Group 2016.2 only.
+'This is the maintenance program that will store the Reason that will be used for the drop down in the GCG_5544_OE_OpenOrderReview_GSS_Var1 program.
+'GCG_5544_Late_Reason_Maint.g2u
+'The custom table is GCG_5544_Late_Reason  
+
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sSql.Declare
+
+f.ODBC.Connection!con.OpenCompanyConnection(500)
+'get the Product lines from the custom table and set up grid
+F.Intrinsic.Control.CallSub(DTGrid)
+gui.Form..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Form_UnLoad.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+F.ODBC.Connection!con.Close
+F.Intrinsic.Control.End
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.cmdAdd_Click.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.iID.Declare
+V.Local.sSql.Declare
+F.Intrinsic.Control.If(v.Screen.Form!txtReason.text, !=, "")
+	F.Data.DataTable.AddRow("dtLR",  "Reason", v.Screen.Form!txtReason.Text)
+	gui.Form.txtReason.Text("")
+	gui.Form.txtPL.Text("")
+	F.Data.DataTable.SaveToDB("dtLR", "con", "GCG_5544_Late_Reason","Reason",7)
+	F.Data.DataTable.AcceptChanges("dtLR")
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.DTGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+F.Data.DataTable.CreateFromSQL("dtLR", "con", "Select Reason from GCG_5544_Late_Reason", true)
+Gui.Form.GsGCPL.AddGridviewFromDatatable("dvLR", "dtLR")
+Gui.Form.GsGCPL.MainView("dvLR")
+gui.Form.GsGCPL.SetGridviewProperty("dvLR", "AllowSort", True)
+Gui.Form.GsGCPL.SetGridviewProperty("dvLR", "AllowFilter", True)
+gui.Form.GsGCPL.SetGridviewProperty("dvLR", "Editable", True)
+gui.Form.GsGCPL.SetGridviewProperty("dvLR", "ReadOnly", False)
+gui.Form.GsGCPL.SetColumnProperty("dvLR", "Reason", "AllowEdit", False)
+gui.Form.GsGCPL.SetColumnProperty("dvLR", "Reason", "Caption", "Late Reason")
+gui.Form.GsGCPL.ContextMenuAttach("ctxLateReason")
+'this does not fire an event that we can use
+'gui.Form.GsGCPL.SetGridviewProperty("dvLR", "AllowDeleteRows", True)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.DTGrid.End
+
+
+Program.Sub.Addclick.Start
+
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.iRow.Declare
+v.Local.sReason.Declare
+v.Local.sSql.Declare
+
+    f.Intrinsic.Control.SelectCase(V.Args.ItemName)
+       f.Intrinsic.Control.Case("DELETE")
+       gui.Form.GsGCPL.GetSelectedRows("dvLR",v.Local.iRow) 
+       gui.Form.GsGCPL.GetRowValues("dvLR",v.Local.iRow,v.Local.sReason)
+       f.Data.DataTable.DeleteRow("dtLR",v.Local.iRow) 
+       f.Data.DataTable.AcceptChanges("dtLR") 
+       f.Intrinsic.String.Build("delete from GCG_5544_LATE_REASON WHERE REASON = '{0}'",v.Local.sReason.Trim,v.Local.sSql)
+       F.ODBC.Connection!con.Execute(v.Local.sSql)
+    f.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.Addclick.End
